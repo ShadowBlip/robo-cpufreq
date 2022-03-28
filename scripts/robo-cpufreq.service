@@ -1,0 +1,14 @@
+[Unit]
+Description=robo-cpufreq - Automatic CPU speed & power optimizer for Linux
+After=network.target network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/robo-cpufreq/venv
+Environment=PYTHONPATH=/opt/robo-cpufreq
+ExecStart=/opt/robo-cpufreq/venv/bin/python /opt/robo-cpufreq/venv/bin/robo-cpufreq --daemon
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

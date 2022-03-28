@@ -1,5 +1,5 @@
 #!/bin/sh
-# Wrapper script around auto-cpufreq using the python virtual environment
+# Wrapper script around robo-cpufreq using the python virtual environment
 
 set -eu
 
@@ -24,11 +24,11 @@ else
 fi
 
 # load python virtual environment
-venv_dir=/opt/auto-cpufreq/venv
+venv_dir=/opt/robo-cpufreq/venv
 . "${venv_dir}/bin/activate"
 
 # run python code with venv loaded
-PYTHONPATH=/opt/auto-cpufreq \
-            /opt/auto-cpufreq/venv/bin/python \
-            /opt/auto-cpufreq/venv/bin/auto-cpufreq \
+PYTHONPATH=/opt/robo-cpufreq \
+            /opt/robo-cpufreq/venv/bin/python \
+            /opt/robo-cpufreq/venv/bin/robo-cpufreq \
             "${param}"
