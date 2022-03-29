@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# auto-cpufreq-installer:
-# auto-cpufreq source code based installer
+# robo-cpufreq-installer:
+# robo-cpufreq source code based installer
 
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "${SCRIPT_PATH}")
@@ -35,7 +35,7 @@ function root_check {
 
 # python packages install
 function setup_venv {
-    venv_dir=/opt/auto-cpufreq/venv
+    venv_dir=/opt/robo-cpufreq/venv
     mkdir -p "${venv_dir}"
     python3 -m venv "${venv_dir}"
 
@@ -47,12 +47,12 @@ function setup_venv {
 # tool install
 function install {
   python3 setup.py install --record files.txt
-  mkdir -p /usr/local/share/auto-cpufreq/
-  cp -r scripts/ /usr/local/share/auto-cpufreq/
+  mkdir -p /usr/local/share/robo-cpufreq/
+  cp -r scripts/ /usr/local/share/robo-cpufreq/
 
-  # this is necessary since we need this script before we can run auto-cpufreq itself
-  cp scripts/auto-cpufreq-venv-wrapper /usr/local/bin/auto-cpufreq
-  chmod a+x /usr/local/bin/auto-cpufreq
+  # this is necessary since we need this script before we can run robo-cpufreq itself
+  cp scripts/robo-cpufreq-venv-wrapper /usr/local/bin/robo-cpufreq
+  chmod a+x /usr/local/bin/robo-cpufreq
 }
 
 # First argument is the distro
@@ -67,14 +67,14 @@ function completed () {
   echo -e "\nInstalling necessary Python packages\n"
   setup_venv
   separator
-  echo -e "\ninstalling auto-cpufreq tool\n"
+  echo -e "\ninstalling robo-cpufreq tool\n"
   install
 }
 
 function complete_msg() {
   separator
-  echo -e "\nauto-cpufreq tool successfully installed.\n"
-  echo -e "For list of options, run:\nauto-cpufreq"
+  echo -e "\nrobo-cpufreq tool successfully installed.\n"
+  echo -e "For list of options, run:\nrobo-cpufreq"
   separator
 }
 
@@ -87,14 +87,14 @@ function manual_install {
   echo -e "\nRun following sequence of lines:"
   echo -e "\n-----"
   echo -e "\npython3 setup.py install --record files.txt"
-  echo -e "mkdir -p /usr/local/share/auto-cpufreq/"
-  echo -e "cp -r scripts/ /usr/local/share/auto-cpufreq/"
+  echo -e "mkdir -p /usr/local/share/robo-cpufreq/"
+  echo -e "cp -r scripts/ /usr/local/share/robo-cpufreq/"
   echo -e "\n-----"
   echo -e "\nAfter which tool is installed, for full list of options run:"
-  echo -e "auto-cpufreq"
+  echo -e "robo-cpufreq"
   separator
   echo -e "\nConsider creating a feature request to add support for your distro:"
-  echo -e "https://github.com/AdnanHodzic/auto-cpufreq/issues/new"
+  echo -e "https://github.com/ShadowBlip/robo-cpufreq/issues/new"
   echo -e "\nMake sure to include following information:\n"
   echo -e "Distribution: $distro"
   echo -e "Release: $release"
@@ -162,18 +162,18 @@ fi
 
 function tool_remove {
   files="files.txt"
-  share_dir="/usr/local/share/auto-cpufreq/"
-  srv_install="/usr/bin/auto-cpufreq-install"
-  srv_remove="/usr/bin/auto-cpufreq-remove"
-  stats_file="/var/run/auto-cpufreq.stats"
-  tool_proc_rm="/usr/local/bin/auto-cpufreq --remove"
-  wrapper_script="/usr/local/bin/auto-cpufreq"
-  unit_file="/etc/systemd/system/auto-cpufreq.service"
-  venv_path="/opt/auto-cpufreq"
-  cpufreqctl="/usr/bin/cpufreqctl.auto-cpufreq"
+  share_dir="/usr/local/share/robo-cpufreq/"
+  srv_install="/usr/bin/robo-cpufreq-install"
+  srv_remove="/usr/bin/robo-cpufreq-remove"
+  stats_file="/var/run/robo-cpufreq.stats"
+  tool_proc_rm="/usr/local/bin/robo-cpufreq --remove"
+  wrapper_script="/usr/local/bin/robo-cpufreq"
+  unit_file="/etc/systemd/system/robo-cpufreq.service"
+  venv_path="/opt/robo-cpufreq"
+  cpufreqctl="/usr/bin/cpufreqctl.robo-cpufreq"
 
-  # stop any running auto-cpufreq argument (daemon/live/monitor)
-  tool_arg_pids=($(pgrep -f "auto-cpufreq --"))
+  # stop any running robo-cpufreq argument (daemon/live/monitor)
+  tool_arg_pids=($(pgrep -f "robo-cpufreq --"))
   for pid in "${tool_arg_pids[@]}"; do
     if [[ $tool_arg_pids != $$ ]]; then
       kill "$tool_arg_pids"
@@ -185,7 +185,7 @@ function tool_remove {
     eval $tool_proc_rm
   fi
 
-  # remove auto-cpufreq and all its supporting files
+  # remove robo-cpufreq and all its supporting files
   [ -f $files ] && cat $files | xargs sudo rm -rf && rm -f $files
   [ -d $share_dir ] && rm -rf $share_dir
 
@@ -201,13 +201,13 @@ function tool_remove {
   rm -rf "${venv_path}"
 
   separator
-  echo -e "\nauto-cpufreq tool and all its supporting files successfully removed."
+  echo -e "\nrobo-cpufreq tool and all its supporting files successfully removed."
   separator
 }
 
 function ask_operation {
-  echo -e "\n-------------------------- auto-cpufreq installer -----------------------------"
-  echo -e "\nWelcome to auto-cpufreq tool installer."
+  echo -e "\n-------------------------- robo-cpufreq installer -----------------------------"
+  echo -e "\nWelcome to robo-cpufreq tool installer."
   echo -e "\nOptions:\n"
   read -p \
 "[I]nstall

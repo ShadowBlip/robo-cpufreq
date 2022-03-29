@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# auto-cpufreq - core functionality
+# robo-cpufreq - core functionality
 
 import os
 import platform as pl
@@ -19,7 +19,7 @@ from shutil import which
 from subprocess import getoutput, call, run, check_output, DEVNULL
 
 sys.path.append("../")
-from auto_cpufreq.power_helper import *
+from robo_cpufreq.power_helper import *
 
 warnings.filterwarnings("ignore")
 
@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 # - re-enable CPU fan speed display and make more generic and not only for thinkpad
 # - replace get system/CPU load from: psutil.getloadavg() | available in 5.6.2)
 
-SCRIPTS_DIR = Path("/usr/local/share/auto-cpufreq/scripts/")
+SCRIPTS_DIR = Path("/usr/local/share/robo-cpufreq/scripts/")
 
 # from the highest performance to the lowest
 ALL_GOVERNORS = (
@@ -51,23 +51,23 @@ POWER_SUPPLY_IGNORELIST = ["hidpp_battery"]
 powersave_load_threshold = (75 * CPUS) / 100
 performance_load_threshold = (50 * CPUS) / 100
 
-# auto-cpufreq stats file path
-auto_cpufreq_stats_path = None
-auto_cpufreq_stats_file = None
+# robo-cpufreq stats file path
+robo_cpufreq_stats_path = None
+robo_cpufreq_stats_file = None
 
 if os.getenv("PKG_MARKER") == "SNAP":
-    auto_cpufreq_stats_path = Path("/var/snap/auto-cpufreq/current/auto-cpufreq.stats")
+    robo_cpufreq_stats_path = Path("/var/snap/robo-cpufreq/current/robo-cpufreq.stats")
 else:
-    auto_cpufreq_stats_path = Path("/var/run/auto-cpufreq.stats")
+    robo_cpufreq_stats_path = Path("/var/run/robo-cpufreq.stats")
 
 # daemon check
 dcheck = getoutput("snapctl get daemon")
 
 
 def file_stats():
-    global auto_cpufreq_stats_file
-    auto_cpufreq_stats_file = open(auto_cpufreq_stats_path, "w")
-    sys.stdout = auto_cpufreq_stats_file
+    global robo_cpufreq_stats_file
+    robo_cpufreq_stats_file = open(robo_cpufreq_stats_path, "w")
+    sys.stdout = robo_cpufreq_stats_file
 
 
 def get_config(config_file=""):
@@ -96,7 +96,7 @@ except PermissionError:
                 print("sudo mv /etc/os-release /etc/os-release-backup\n")                
                 print("[!] Create hardlink to /etc/os-release:")
                 print("sudo ln /etc/pop-os/os-release /etc/os-release\n")            
-                print("[!] Aborting. Restart auto-cpufreq when you created the hardlink")
+                print("[!] Aborting. Restart robo-cpufreq when you created the hardlink")
                 sys.exit(1)
             else:
                 # This should not be the case. But better be sure.
@@ -109,23 +109,23 @@ except PermissionError:
         print("[!] Aborting...")
         sys.exit(1)
 
-# display running version of auto-cpufreq
+# display running version of robo-cpufreq
 def app_version():
 
-    print("auto-cpufreq version: ", end="")
+    print("robo-cpufreq version: ", end="")
 
     # snap package
     if os.getenv("PKG_MARKER") == "SNAP":
         print(getoutput("echo \(Snap\) $SNAP_VERSION"))
     # aur package
     elif dist_name in ["arch", "manjaro", "garuda"]:
-        aur_pkg_check = call("pacman -Qs auto-cpufreq > /dev/null", shell=True)
+        aur_pkg_check = call("pacman -Qs robo-cpufreq > /dev/null", shell=True)
         if aur_pkg_check == 1:
             print(get_formatted_version())
         else:
-            print(getoutput("pacman -Qi auto-cpufreq | grep Version"))
+            print(getoutput("pacman -Qi robo-cpufreq | grep Version"))
     else:
-        # source code (auto-cpufreq-installer)
+        # source code (robo-cpufreq-installer)
         try:
             print(get_formatted_version())
         except Exception as e:
@@ -134,7 +134,7 @@ def app_version():
 
 # return formatted version for a better readability
 def get_formatted_version():
-    literal_version = pkg_resources.require("auto-cpufreq")[0].version
+    literal_version = pkg_resources.require("robo-cpufreq")[0].version
     splitted_version = literal_version.split("+")
     formatted_version = splitted_version[0]
     
@@ -145,7 +145,7 @@ def get_formatted_version():
 
 def app_res_use():
     p = psutil.Process()
-    print("auto-cpufreq system resource consumption:")
+    print("robo-cpufreq system resource consumption:")
     print("cpu usage:", p.cpu_percent(), "%")
     print("memory use:", round(p.memory_percent(), 2), "%")
 
@@ -278,7 +278,7 @@ def get_avail_performance():
 def get_current_gov():
     return print(
         "Currently using:",
-        getoutput("cpufreqctl.auto-cpufreq --governor").strip().split(" ")[0],
+        getoutput("cpufreqctl.robo-cpufreq --governor").strip().split(" ")[0],
         "governor",
     )
 
@@ -292,23 +292,23 @@ def cpufreqctl():
     if os.getenv("PKG_MARKER") == "SNAP":
         pass
     else:
-        # deploy cpufreqctl.auto-cpufreq script
+        # deploy cpufreqctl.robo-cpufreq script
         if os.path.isfile("/usr/bin/cpufreqctl"):
-            shutil.copy(SCRIPTS_DIR / "cpufreqctl.sh", "/usr/bin/cpufreqctl.auto-cpufreq")
+            shutil.copy(SCRIPTS_DIR / "cpufreqctl.sh", "/usr/bin/cpufreqctl.robo-cpufreq")
         else:
-            shutil.copy(SCRIPTS_DIR / "cpufreqctl.sh", "/usr/bin/cpufreqctl.auto-cpufreq")
+            shutil.copy(SCRIPTS_DIR / "cpufreqctl.sh", "/usr/bin/cpufreqctl.robo-cpufreq")
 
 
 def cpufreqctl_restore():
     """
-    remove cpufreqctl.auto-cpufreq script
+    remove cpufreqctl.robo-cpufreq script
     """
     # detect if running on a SNAP
     if os.getenv("PKG_MARKER") == "SNAP":
         pass
     else:
-        if os.path.isfile("/usr/bin/cpufreqctl.auto-cpufreq"):
-            os.remove("/usr/bin/cpufreqctl.auto-cpufreq")
+        if os.path.isfile("/usr/bin/cpufreqctl.robo-cpufreq"):
+            os.remove("/usr/bin/cpufreqctl.robo-cpufreq")
 
 
 def footer(l=79):
@@ -318,47 +318,44 @@ def footer(l=79):
 def daemon_not_found():
     print("\n" + "-" * 32 + " Daemon check " + "-" * 33 + "\n")
     print(
-        "ERROR:\n\nDaemon not enabled, must run install first, i.e: \nsudo auto-cpufreq --install"
+        "ERROR:\n\nDaemon not enabled, must run install first, i.e: \nsudo robo-cpufreq --install"
     )
     footer()
 
 
 def deploy_complete_msg():
-    print("\n" + "-" * 17 + " auto-cpufreq daemon installed and running " + "-" * 17 + "\n")
-    print("To view live stats, run:\nauto-cpufreq --stats")
-    print("\nTo disable and remove auto-cpufreq daemon, run:\nsudo auto-cpufreq --remove")
+    print("\n" + "-" * 17 + " robo-cpufreq daemon installed and running " + "-" * 17 + "\n")
+    print("To view live stats, run:\nrobo-cpufreq --stats")
+    print("\nTo disable and remove robo-cpufreq daemon, run:\nsudo robo-cpufreq --remove")
     footer()
 
 
 def deprecated_log_msg():
-    print("\n" + "-" * 24 + " auto-cpufreq log file renamed " + "-" * 24 + "\n")
+    print("\n" + "-" * 24 + " robo-cpufreq log file renamed " + "-" * 24 + "\n")
     print("The --log flag has been renamed to --stats\n")
-    print("To view live stats, run:\nauto-cpufreq --stats")
+    print("To view live stats, run:\nrobo-cpufreq --stats")
     footer()
 
 
 def remove_complete_msg():
-    print("\n" + "-" * 25 + " auto-cpufreq daemon removed " + "-" * 25 + "\n")
-    print("auto-cpufreq successfully removed.")
+    print("\n" + "-" * 25 + " robo-cpufreq daemon removed " + "-" * 25 + "\n")
+    print("robo-cpufreq successfully removed.")
     footer()
 
 
 def deploy_daemon():
-    print("\n" + "-" * 21 + " Deploying auto-cpufreq as a daemon " + "-" * 22 + "\n")
+    print("\n" + "-" * 21 + " Deploying robo-cpufreq as a daemon " + "-" * 22 + "\n")
 
     # deploy cpufreqctl script func call
     cpufreqctl()
 
-    # turn off bluetooth on boot
-    bluetooth_disable()
+    robo_cpufreq_stats_path.touch(exist_ok=True)
 
-    auto_cpufreq_stats_path.touch(exist_ok=True)
+    print("\n* Deploy robo-cpufreq install script")
+    shutil.copy(SCRIPTS_DIR / "robo-cpufreq-install.sh", "/usr/bin/robo-cpufreq-install")
 
-    print("\n* Deploy auto-cpufreq install script")
-    shutil.copy(SCRIPTS_DIR / "auto-cpufreq-install.sh", "/usr/bin/auto-cpufreq-install")
-
-    print("\n* Deploy auto-cpufreq remove script")
-    shutil.copy(SCRIPTS_DIR / "auto-cpufreq-remove.sh", "/usr/bin/auto-cpufreq-remove")
+    print("\n* Deploy robo-cpufreq remove script")
+    shutil.copy(SCRIPTS_DIR / "robo-cpufreq-remove.sh", "/usr/bin/robo-cpufreq-remove")
 
     # output warning if gnome power profile is running
     gnome_power_detect_install()
@@ -367,32 +364,29 @@ def deploy_daemon():
     # output warning if TLP service is detected
     tlp_service_detect()
 
-    call("/usr/bin/auto-cpufreq-install", shell=True)
+    call("/usr/bin/robo-cpufreq-install", shell=True)
 
 
 def deploy_daemon_performance():
-    print("\n" + "-" * 21 + " Deploying auto-cpufreq as a daemon (performance) " + "-" * 22 + "\n")
+    print("\n" + "-" * 21 + " Deploying robo-cpufreq as a daemon (performance) " + "-" * 22 + "\n")
 
     # check that performance is in scaling_available_governors
     with open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors") as available_governors:
         if "performance" not in available_governors.read():
             print("\"perfomance\" governor is unavailable on this system, run:\n"
-                    "sudo sudo auto-cpufreq --install\n\n"
-                    "to install auto-cpufreq using default \"balanced\" governor.\n")
+                    "sudo sudo robo-cpufreq --install\n\n"
+                    "to install robo-cpufreq using default \"balanced\" governor.\n")
 
     # deploy cpufreqctl script func call
     cpufreqctl()
 
-    # turn off bluetooth on boot
-    bluetooth_disable()
+    robo_cpufreq_stats_path.touch(exist_ok=True)
 
-    auto_cpufreq_stats_path.touch(exist_ok=True)
+    print("\n* Deploy robo-cpufreq install script")
+    shutil.copy(SCRIPTS_DIR / "robo-cpufreq-install.sh", "/usr/bin/robo-cpufreq-install")
 
-    print("\n* Deploy auto-cpufreq install script")
-    shutil.copy(SCRIPTS_DIR / "auto-cpufreq-install.sh", "/usr/bin/auto-cpufreq-install")
-
-    print("\n* Deploy auto-cpufreq remove script")
-    shutil.copy(SCRIPTS_DIR / "auto-cpufreq-remove.sh", "/usr/bin/auto-cpufreq-remove")
+    print("\n* Deploy robo-cpufreq remove script")
+    shutil.copy(SCRIPTS_DIR / "robo-cpufreq-remove.sh", "/usr/bin/robo-cpufreq-remove")
 
     # output warning if gnome power profile is running
     gnome_power_detect_install()
@@ -401,38 +395,35 @@ def deploy_daemon_performance():
     # output warning if TLP service is detected
     tlp_service_detect()
 
-    call("/usr/bin/auto-cpufreq-install", shell=True)
+    call("/usr/bin/robo-cpufreq-install", shell=True)
 
 
-# remove auto-cpufreq daemon
+# remove robo-cpufreq daemon
 def remove():
 
-    # check if auto-cpufreq is installed
-    if not os.path.exists("/usr/bin/auto-cpufreq-remove"):
-        print("\nauto-cpufreq daemon is not installed.\n")
+    # check if robo-cpufreq is installed
+    if not os.path.exists("/usr/bin/robo-cpufreq-remove"):
+        print("\nrobo-cpufreq daemon is not installed.\n")
         sys.exit(1)
 
-    print("\n" + "-" * 21 + " Removing auto-cpufreq daemon " + "-" * 22 + "\n")
-
-    # turn on bluetooth on boot
-    bluetooth_enable()
+    print("\n" + "-" * 21 + " Removing robo-cpufreq daemon " + "-" * 22 + "\n")
 
     # output warning if gnome power profile is stopped
     gnome_power_rm_reminder()
     gnome_power_svc_enable()
 
-    # run auto-cpufreq daemon remove script
-    call("/usr/bin/auto-cpufreq-remove", shell=True)
+    # run robo-cpufreq daemon remove script
+    call("/usr/bin/robo-cpufreq-remove", shell=True)
 
-    # remove auto-cpufreq-remove
-    os.remove("/usr/bin/auto-cpufreq-remove")
+    # remove robo-cpufreq-remove
+    os.remove("/usr/bin/robo-cpufreq-remove")
 
     # delete stats file
-    if auto_cpufreq_stats_path.exists():
-        if auto_cpufreq_stats_file is not None:
-            auto_cpufreq_stats_file.close()
+    if robo_cpufreq_stats_path.exists():
+        if robo_cpufreq_stats_file is not None:
+            robo_cpufreq_stats_file.close()
 
-        auto_cpufreq_stats_path.unlink()
+        robo_cpufreq_stats_path.unlink()
 
     # restore original cpufrectl script
     cpufreqctl_restore()
@@ -461,13 +452,13 @@ def countdown(s):
 
     for remaining in range(s, 0, -1):
         sys.stdout.write("\r")
-        sys.stdout.write('\t\t\t"auto-cpufreq" refresh in:{:2d}'.format(remaining))
+        sys.stdout.write('\t\t\t"robo-cpufreq" refresh in:{:2d}'.format(remaining))
         sys.stdout.flush()
         time.sleep(1)
 
-    if auto_cpufreq_stats_file is not None:
-        auto_cpufreq_stats_file.seek(0)
-        auto_cpufreq_stats_file.truncate(0)
+    if robo_cpufreq_stats_file is not None:
+        robo_cpufreq_stats_file.seek(0)
+        robo_cpufreq_stats_file.truncate(0)
 
         # execution timestamp
         from datetime import datetime
@@ -498,7 +489,7 @@ def display_load():
 def set_frequencies():
     """
     Sets frequencies:
-     - if option is used in auto-cpufreq.conf: use configured value
+     - if option is used in robo-cpufreq.conf: use configured value
      - if option is disabled/no conf file used: set default frequencies
     Frequency setting is performed only once on power supply change
     """
@@ -524,9 +515,9 @@ def set_frequencies():
         },
     }
     if not hasattr(set_frequencies, "max_limit"):
-        set_frequencies.max_limit = int(getoutput(f"cpufreqctl.auto-cpufreq --frequency-max-limit"))
+        set_frequencies.max_limit = int(getoutput(f"cpufreqctl.robo-cpufreq --frequency-max-limit"))
     if not hasattr(set_frequencies, "min_limit"):
-        set_frequencies.min_limit = int(getoutput(f"cpufreqctl.auto-cpufreq --frequency-min-limit"))
+        set_frequencies.min_limit = int(getoutput(f"cpufreqctl.robo-cpufreq --frequency-min-limit"))
 
     conf = get_config()
 
@@ -535,10 +526,10 @@ def set_frequencies():
         if not conf.has_option(power_supply, freq_type):
             # fetch and use default frequencies
             if freq_type == "scaling_max_freq":
-                curr_freq = int(getoutput(f"cpufreqctl.auto-cpufreq --frequency-max"))
+                curr_freq = int(getoutput(f"cpufreqctl.robo-cpufreq --frequency-max"))
                 value = set_frequencies.max_limit
             else:
-                curr_freq = int(getoutput(f"cpufreqctl.auto-cpufreq --frequency-min"))
+                curr_freq = int(getoutput(f"cpufreqctl.robo-cpufreq --frequency-min"))
                 value = set_frequencies.min_limit
             if curr_freq == value:
                 continue
@@ -564,7 +555,7 @@ def set_frequencies():
 
         # set the frequency
         print(message)
-        run(f"cpufreqctl.auto-cpufreq {args}", shell=True)
+        run(f"cpufreqctl.robo-cpufreq {args}", shell=True)
 
 
 # set powersave and enable turbo
@@ -575,12 +566,12 @@ def set_powersave():
     else:
         gov = get_avail_powersave()
     print(f'Setting to use: "{gov}" governor')
-    run(f"cpufreqctl.auto-cpufreq --governor --set={gov}", shell=True)
+    run(f"cpufreqctl.robo-cpufreq --governor --set={gov}", shell=True)
     if (
         Path("/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference").exists()
         and Path("/sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost").exists() is False
     ):
-        run("cpufreqctl.auto-cpufreq --epp --set=balance_power", shell=True)
+        run("cpufreqctl.robo-cpufreq --epp --set=balance_power", shell=True)
         print('Setting to use: "balance_power" EPP')
 
     # set frequencies
@@ -598,15 +589,15 @@ def set_powersave():
 
     # conditions for setting turbo in powersave
     if conf.has_option("battery", "turbo"):
-        auto = conf["battery"]["turbo"]
+        robo = conf["battery"]["turbo"]
     else:
-        auto = "auto"
+        robo = "robo"
 
-    if auto == "always":
+    if robo == "always":
         print("Configuration file enforces turbo boost")
         print("setting turbo boost: on")
         turbo(True)
-    elif auto == "never":
+    elif robo == "never":
         print("Configuration file disables turbo boost")
         print("setting turbo boost: off")
         turbo(False)
@@ -782,14 +773,14 @@ def set_performance():
 
     print(f'Setting to use: "{gov}" governor')
     run(
-        f"cpufreqctl.auto-cpufreq --governor --set={gov}",
+        f"cpufreqctl.robo-cpufreq --governor --set={gov}",
         shell=True,
     )
     if (
         Path("/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference").exists()
         and Path("/sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost").exists() is False
     ):
-        run("cpufreqctl.auto-cpufreq --epp --set=balance_performance", shell=True)
+        run("cpufreqctl.robo-cpufreq --epp --set=balance_performance", shell=True)
         print('Setting to use: "balance_performance" EPP')
 
     # set frequencies
@@ -806,15 +797,15 @@ def set_performance():
     print("Average temp. of all cores:", avg_all_core_temp, "°C")
 
     if conf.has_option("charger", "turbo"):
-        auto = conf["charger"]["turbo"]
+        robo = conf["charger"]["turbo"]
     else:
-        auto = "auto"
+        robo = "robo"
 
-    if auto == "always":
+    if robo == "always":
         print("Configuration file enforces turbo boost")
         print("setting turbo boost: on")
         turbo(True)
-    elif auto == "never":
+    elif robo == "never":
         print("Configuration file disables turbo boost")
         print("setting turbo boost: off")
         turbo(True)
@@ -985,7 +976,7 @@ def mon_performance():
     footer()
 
 
-def set_autofreq():
+def set_robofreq():
     """
     set cpufreq governor based if device is charging
     """
@@ -1000,7 +991,7 @@ def set_autofreq():
         set_powersave()
 
 
-def mon_autofreq():
+def mon_robofreq():
     """
     make cpufreq suggestions
     :return:
@@ -1079,7 +1070,7 @@ def sysinfo():
     print("Architecture:", cpu_arch)
 
     # get driver
-    driver = getoutput("cpufreqctl.auto-cpufreq --driver")
+    driver = getoutput("cpufreqctl.robo-cpufreq --driver")
     print("Driver: " + driver)
 
     # get usage and freq info of cpus
@@ -1123,7 +1114,7 @@ def sysinfo():
             # https://www.kernel.org/doc/Documentation/hwmon/k10temp
             temp_per_cpu = [core_temp["k10temp"][0].current] * online_cpu_count
         elif "zenpower" in core_temp:
-            # https://github.com/AdnanHodzic/auto-cpufreq/issues/145#issuecomment-763294009
+            # https://github.com/AdnanHodzic/robo-cpufreq/issues/145#issuecomment-763294009
             temp_per_cpu = [core_temp["zenpower"][0].current] * online_cpu_count
         elif "acpitz" in core_temp:
             temp_per_cpu = [core_temp["acpitz"][0].current] * online_cpu_count
@@ -1151,17 +1142,17 @@ def sysinfo():
 
 
 def no_stats_msg():
-    print("\n" + "-" * 29 + " auto-cpufreq stats " + "-" * 30 + "\n")
+    print("\n" + "-" * 29 + " robo-cpufreq stats " + "-" * 30 + "\n")
     print(
-        'ERROR: auto-cpufreq stats are missing.\n\nMake sure to run: "auto-cpufreq --install" first'
+        'ERROR: robo-cpufreq stats are missing.\n\nMake sure to run: "robo-cpufreq --install" first'
     )
 
 
 # read stats func
 def read_stats():
     # read stats
-    if os.path.isfile(auto_cpufreq_stats_path):
-        call(["tail", "-n 50", "-f", str(auto_cpufreq_stats_path)], stderr=DEVNULL)
+    if os.path.isfile(robo_cpufreq_stats_path):
+        call(["tail", "-n 50", "-f", str(robo_cpufreq_stats_path)], stderr=DEVNULL)
     else:
         no_stats_msg()
     footer()
@@ -1178,16 +1169,16 @@ def is_running(program, argument):
 
 
 def daemon_running_msg():
-    print("\n" + "-" * 24 + " auto-cpufreq running " + "-" * 30 + "\n")
+    print("\n" + "-" * 24 + " robo-cpufreq running " + "-" * 30 + "\n")
     print(
-        "ERROR: auto-cpufreq is running in daemon mode.\n\nMake sure to stop the deamon before running with --live or --monitor mode"
+        "ERROR: robo-cpufreq is running in daemon mode.\n\nMake sure to stop the deamon before running with --live or --monitor mode"
     )
     footer()
 
 
-# check if auto-cpufreq --daemon is running
+# check if robo-cpufreq --daemon is running
 def running_daemon():
-    if is_running("auto-cpufreq", "--daemon"):
+    if is_running("robo-cpufreq", "--daemon"):
         daemon_running_msg()
         exit(1)
     elif os.getenv("PKG_MARKER") == "SNAP" and dcheck == "enabled":

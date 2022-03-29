@@ -13,10 +13,10 @@ def read(name):
         return f.read()
 
 # Used for the tar.gz/snap releases
-VERSION = "1.9.3"
+VERSION = "22.03"
 
 setup(
-    name="auto-cpufreq",
+    name="roboo-cpufreq",
     setuptools_git_versioning={
         "starting_version": VERSION,
         "template": "{tag}+{sha}",
@@ -26,19 +26,19 @@ setup(
     setup_requires=["setuptools-git-versioning"],
     description="Automatic CPU speed & power optimizer for Linux",
     long_description=readme,
-    author="Adnan Hodzic",
-    author_email="adnan@hodzic.org",
-    url="https://github.com/AdnanHodzic/auto-cpufreq",
-    packages=["auto_cpufreq"],
+    author="Derek Clark",
+    author_email="derekjohn.clark@gmail.com",
+    url="https://github.com/ShadowBlip/robo-cpufreq",
+    packages=["robo_cpufreq"],
     install_requires=read("requirements.txt"),
     include_package_data=True,
     zip_safe=True,
     license="GPLv3",
-    keywords="linux cpu speed power frequency turbo optimzier auto cpufreq",
+    keywords="linux cpu speed power frequency turbo optimzier robo cpufreq",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Operating System :: POSIX :: Linux" "Environment :: Console" "Natural Language :: English",
     ],
-    scripts=["bin/auto-cpufreq"],
+    scripts=["bin/robo-cpufreq"],
 )

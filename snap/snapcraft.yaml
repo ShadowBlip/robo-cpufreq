@@ -1,4 +1,4 @@
-name: auto-cpufreq
+name: roboo-cpufreq
 base: core20
 summary: Automatic CPU speed & power optimizer for Linux
 description: |
@@ -10,7 +10,7 @@ description: |
 license: LGPL-3.0
 grade: stable
 confinement: strict
-adopt-info: auto-cpufreq
+adopt-info: roboo-cpufreq
 
 compression: lzo
 
@@ -35,18 +35,18 @@ parts:
     plugin: dump
     source: scripts
     organize:
-      cpufreqctl.sh: usr/bin/cpufreqctl.auto-cpufreq
+      cpufreqctl.sh: usr/bin/cpufreqctl.robo-cpufreq
       snapdaemon.sh: usr/bin/snapdaemon
 
 plugs:
-   etc-auto-cpufreq-conf:
+   etc-robo-cpufreq-conf:
     interface: system-files
     write:
-    - /etc/auto-cpufreq.conf
+    - /etc/robo-cpufreq.conf
 
 apps:
-  auto-cpufreq:
-    command: bin/auto-cpufreq
+  roboo-cpufreq:
+    command: bin/roboo-cpufreq
     environment:
       PYTHONPATH: $SNAP/usr/lib/python3/site-packages:$SNAP/usr/lib/python3/dist-packages:$PYTHONPATH
       LC_ALL: C.UTF-8
@@ -56,7 +56,7 @@ apps:
       - cpu-control
       - system-observe
       - hardware-observe
-      - etc-auto-cpufreq-conf
+      - etc-roboo-cpufreq-conf
 
   service:
     command: usr/bin/snapdaemon
@@ -64,7 +64,7 @@ apps:
       - cpu-control
       - system-observe
       - hardware-observe
-      - etc-auto-cpufreq-conf
+      - etc-roboo-cpufreq-conf
     environment:
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
