@@ -43,7 +43,7 @@ if os.getenv("PKG_MARKER") != "SNAP":
         except:
             print("\nUnable to determine init system")
             print("If this causes any problems, please submit an issue:")
-            print("https://github.com/AdnanHodzic/robo-cpufreq/issues")
+            print("https://github.com/ShadowBlip/robo-cpufreq/issues")
 
 # alert in case TLP service is running
 def tlp_service_detect():
@@ -81,7 +81,7 @@ def gnome_power_detect():
             print("Detected running GNOME Power Profiles daemon service!")
             print("This daemon might interfere with robo-cpufreq and should be disabled.")
             print("\nSteps to perform this action using robo-cpufreq: power_helper script:")
-            print("git clone https://github.com/AdnanHodzic/robo-cpufreq.git")
+            print("git clone https://github.com/ShadowBlip/robo-cpufreq.git")
             print("cd robo-cpufreq/robo_cpufreq")
             print("python3 power_helper.py --gnome_power_disable")
 
@@ -105,7 +105,7 @@ def gnome_power_detect_snap():
     print("Unable to detect state of GNOME Power Profiles daemon service!")
     print("This daemon might interfere with robo-cpufreq and should be disabled.")
     print("\nSteps to perform this action using robo-cpufreq: power_helper script:")
-    print("git clone https://github.com/AdnanHodzic/robo-cpufreq.git")
+    print("git clone https://github.com/ShadowBlip/robo-cpufreq.git")
     print("cd robo-cpufreq/robo_cpufreq")
     print("python3 power_helper.py --gnome_power_disable")
 
@@ -134,7 +134,7 @@ def gnome_power_svc_enable():
         except:
             print("\nUnable to enable GNOME power profiles")
             print("If this causes any problems, please submit an issue:")
-            print("https://github.com/AdnanHodzic/robo-cpufreq/issues")
+            print("https://github.com/ShadowBlip/robo-cpufreq/issues")
 
 
 # gnome power profiles current status
@@ -146,7 +146,7 @@ def gnome_power_svc_status():
         except:
             print("\nUnable to see GNOME power profiles status")
             print("If this causes any problems, please submit an issue:")
-            print("https://github.com/AdnanHodzic/robo-cpufreq/issues")
+            print("https://github.com/ShadowBlip/robo-cpufreq/issues")
 
 
 # gnome power removal reminder
@@ -165,7 +165,7 @@ def gnome_power_rm_reminder_snap():
     print("Unable to detect state of GNOME Power Profiles daemon service!")
     print("Now it's recommended to enable this service.")
     print("\nSteps to perform this action using robo-cpufreq: power_helper script:")
-    print("git clone https://github.com/AdnanHodzic/robo-cpufreq.git")
+    print("git clone https://github.com/ShadowBlip/robo-cpufreq.git")
     print("cd robo-cpufreq/robo_cpufreq")
     print("python3 power_helper.py --gnome_power_enable")
 
@@ -186,7 +186,7 @@ def disable_power_profiles_daemon():
     except:
         print("\nUnable to disable GNOME power profiles")
         print("If this causes any problems, please submit an issue:")
-        print("https://github.com/AdnanHodzic/robo-cpufreq/issues")
+        print("https://github.com/ShadowBlip/robo-cpufreq/issues")
 
 
 # default gnome_power_svc_disable func (balanced)
